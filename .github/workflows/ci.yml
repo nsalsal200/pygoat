@@ -25,15 +25,20 @@ jobs:
       - name: Run Bandit
         run: |
           bandit -r . \
-          -f json \
-          -o sast-bandit.json \
+          -f sarif \
+          -o bandit.sarif \
           -lll || true
 
-      - name: Upload Bandit Results
+      - name: Upload Bandit Artifact
         uses: actions/upload-artifact@v4
         with:
           name: bandit-results
-          path: sast-bandit.json
+          path: bandit.sarif
+
+      - name: Upload Bandit SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: bandit.sarif
 
   semgrep_scan:
     name: Run Semgrep Scan
@@ -51,14 +56,19 @@ jobs:
           semgrep scan \
           --severity=ERROR \
           --severity=WARNING \
-          --json \
-          --output=sast-semgrep.json || true
+          --sarif \
+          --output=semgrep.sarif || true
 
-      - name: Upload Semgrep Results
+      - name: Upload Semgrep Artifact
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-results
-          path: sast-semgrep.json
+          path: semgrep.sarif
+
+      - name: Upload Semgrep SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
 
   docker_build:
     name: Build Docker Image
